@@ -34,48 +34,24 @@ pub fn render_comment_input(frame: &mut Frame, app: &App) {
     frame.render_widget(block, area);
 
     // Build content with type selector hint and input area
+    let type_style = match app.comment_type {
+        CommentType::Note => Style::default()
+            .fg(styles::COMMENT_NOTE)
+            .add_modifier(Modifier::BOLD),
+        CommentType::Suggestion => Style::default()
+            .fg(styles::COMMENT_SUGGESTION)
+            .add_modifier(Modifier::BOLD),
+        CommentType::Issue => Style::default()
+            .fg(styles::COMMENT_ISSUE)
+            .add_modifier(Modifier::BOLD),
+        CommentType::Praise => Style::default()
+            .fg(styles::COMMENT_PRAISE)
+            .add_modifier(Modifier::BOLD),
+    };
     let type_hint = Line::from(vec![
         Span::styled("Type: ", styles::dim_style()),
-        Span::styled(
-            "1=Note ",
-            if app.comment_type == CommentType::Note {
-                Style::default()
-                    .fg(styles::COMMENT_NOTE)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                styles::dim_style()
-            },
-        ),
-        Span::styled(
-            "2=Suggestion ",
-            if app.comment_type == CommentType::Suggestion {
-                Style::default()
-                    .fg(styles::COMMENT_SUGGESTION)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                styles::dim_style()
-            },
-        ),
-        Span::styled(
-            "3=Issue ",
-            if app.comment_type == CommentType::Issue {
-                Style::default()
-                    .fg(styles::COMMENT_ISSUE)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                styles::dim_style()
-            },
-        ),
-        Span::styled(
-            "4=Praise",
-            if app.comment_type == CommentType::Praise {
-                Style::default()
-                    .fg(styles::COMMENT_PRAISE)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                styles::dim_style()
-            },
-        ),
+        Span::styled(app.comment_type.as_str(), type_style),
+        Span::styled(" (Tab to cycle)", styles::dim_style()),
     ]);
 
     let separator = Line::from(Span::styled(
@@ -83,13 +59,63 @@ pub fn render_comment_input(frame: &mut Frame, app: &App) {
         styles::dim_style(),
     ));
 
-    let content = if app.comment_buffer.is_empty() {
-        Line::from(Span::styled("Type your comment...", styles::dim_style()))
-    } else {
-        Line::from(Span::raw(&app.comment_buffer))
-    };
+    // Build content lines with cursor
+    let mut lines = vec![type_hint, separator, Line::from("")];
 
-    let lines = vec![type_hint, separator, Line::from(""), content];
+    if app.comment_buffer.is_empty() {
+        // Show placeholder with cursor at start
+        lines.push(Line::from(vec![
+            Span::styled(
+                "│",
+                Style::default()
+                    .fg(styles::CURSOR_COLOR)
+                    .add_modifier(Modifier::BOLD),
+            ),
+            Span::styled("Type your comment...", styles::dim_style()),
+        ]));
+    } else {
+        // Split buffer into lines and render with cursor
+        let buffer_lines: Vec<&str> = app.comment_buffer.split('\n').collect();
+        let mut char_offset = 0;
+
+        for (line_idx, text) in buffer_lines.iter().enumerate() {
+            let line_start = char_offset;
+            let line_end = char_offset + text.len();
+
+            // Check if cursor is on this line
+            let cursor_on_this_line = app.comment_cursor >= line_start
+                && (app.comment_cursor <= line_end
+                    || (line_idx == buffer_lines.len() - 1
+                        && app.comment_cursor == app.comment_buffer.len()));
+
+            if cursor_on_this_line {
+                let cursor_pos_in_line = app.comment_cursor - line_start;
+                let before_cursor = &text[..cursor_pos_in_line.min(text.len())];
+                let after_cursor = if cursor_pos_in_line < text.len() {
+                    &text[cursor_pos_in_line..]
+                } else {
+                    ""
+                };
+
+                lines.push(Line::from(vec![
+                    Span::raw(before_cursor.to_string()),
+                    Span::styled(
+                        "│",
+                        Style::default()
+                            .fg(styles::CURSOR_COLOR)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::raw(after_cursor.to_string()),
+                ]));
+            } else {
+                lines.push(Line::from(Span::raw(text.to_string())));
+            }
+
+            // Account for newline character (except for last line)
+            char_offset = line_end + 1;
+        }
+    }
+
     let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
 
     frame.render_widget(paragraph, inner);

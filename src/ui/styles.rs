@@ -35,6 +35,7 @@ pub const COMMENT_PRAISE: Color = Color::Green;
 pub const BORDER_FOCUSED: Color = Color::Cyan;
 pub const BORDER_UNFOCUSED: Color = Color::DarkGray;
 pub const STATUS_BAR_BG: Color = Color::Rgb(40, 40, 40);
+pub const CURSOR_COLOR: Color = Color::Yellow;
 
 // Styles
 pub fn header_style() -> Style {

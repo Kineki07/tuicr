@@ -37,6 +37,7 @@ pub struct App {
     pub diff_state: DiffState,
     pub command_buffer: String,
     pub comment_buffer: String,
+    pub comment_cursor: usize,
     pub comment_type: CommentType,
     pub comment_is_file_level: bool,
     pub comment_line: Option<u32>,
@@ -104,6 +105,7 @@ impl App {
             diff_state: DiffState::default(),
             command_buffer: String::new(),
             comment_buffer: String::new(),
+            comment_cursor: 0,
             comment_type: CommentType::Note,
             comment_is_file_level: true,
             comment_line: None,
@@ -353,6 +355,7 @@ impl App {
     pub fn enter_comment_mode(&mut self, file_level: bool) {
         self.input_mode = InputMode::Comment;
         self.comment_buffer.clear();
+        self.comment_cursor = 0;
         self.comment_type = CommentType::Note;
         self.comment_is_file_level = file_level;
         // For line comments, we'd track the current line - for now use None
@@ -362,6 +365,7 @@ impl App {
     pub fn exit_comment_mode(&mut self) {
         self.input_mode = InputMode::Normal;
         self.comment_buffer.clear();
+        self.comment_cursor = 0;
     }
 
     pub fn save_comment(&mut self) {
@@ -393,8 +397,13 @@ impl App {
         self.exit_comment_mode();
     }
 
-    pub fn set_comment_type(&mut self, comment_type: CommentType) {
-        self.comment_type = comment_type;
+    pub fn cycle_comment_type(&mut self) {
+        self.comment_type = match self.comment_type {
+            CommentType::Note => CommentType::Suggestion,
+            CommentType::Suggestion => CommentType::Issue,
+            CommentType::Issue => CommentType::Praise,
+            CommentType::Praise => CommentType::Note,
+        };
     }
 
     pub fn toggle_help(&mut self) {

@@ -46,6 +46,11 @@ pub enum Action {
     DeleteWord,
     ClearLine,
     SubmitInput,
+    TextCursorLeft,
+    TextCursorRight,
+
+    // Comment type
+    CycleCommentType,
 
     // Confirm dialog
     ConfirmYes,
@@ -125,14 +130,18 @@ fn map_command_mode(key: KeyEvent) -> Action {
 
 fn map_comment_mode(key: KeyEvent) -> Action {
     match (key.code, key.modifiers) {
-        // Cancel: Esc, Ctrl+C, Ctrl+D
+        // Cancel: Esc, Ctrl+C
         (KeyCode::Esc, KeyModifiers::NONE) => Action::ExitMode,
         (KeyCode::Char('c'), KeyModifiers::CONTROL) => Action::ExitMode,
-        (KeyCode::Char('d'), KeyModifiers::CONTROL) => Action::ExitMode,
         // Submit: Ctrl+Enter, Ctrl+S, Shift+Enter
         (KeyCode::Enter, KeyModifiers::CONTROL) => Action::SubmitInput,
         (KeyCode::Char('s'), KeyModifiers::CONTROL) => Action::SubmitInput,
         (KeyCode::Enter, KeyModifiers::SHIFT) => Action::SubmitInput,
+        // Comment type: Tab to cycle
+        (KeyCode::Tab, KeyModifiers::NONE) => Action::CycleCommentType,
+        // Cursor movement
+        (KeyCode::Left, KeyModifiers::NONE) => Action::TextCursorLeft,
+        (KeyCode::Right, KeyModifiers::NONE) => Action::TextCursorRight,
         // Editing
         (KeyCode::Backspace, KeyModifiers::NONE) => Action::DeleteChar,
         (KeyCode::Char('w'), KeyModifiers::CONTROL) => Action::DeleteWord,

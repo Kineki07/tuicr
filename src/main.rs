@@ -19,7 +19,6 @@ use ratatui::{Terminal, backend::CrosstermBackend};
 
 use app::App;
 use input::{Action, map_key_to_action};
-use model::CommentType;
 use output::export_to_clipboard;
 use persistence::save_session;
 
@@ -135,21 +134,64 @@ fn main() -> anyhow::Result<()> {
                         if app.input_mode == app::InputMode::Command {
                             app.command_buffer.push(c);
                         } else if app.input_mode == app::InputMode::Comment {
-                            // Handle number keys to set comment type
-                            match c {
-                                '1' => app.set_comment_type(CommentType::Note),
-                                '2' => app.set_comment_type(CommentType::Suggestion),
-                                '3' => app.set_comment_type(CommentType::Issue),
-                                '4' => app.set_comment_type(CommentType::Praise),
-                                _ => app.comment_buffer.push(c),
-                            }
+                            app.comment_buffer.insert(app.comment_cursor, c);
+                            app.comment_cursor += 1;
                         }
                     }
                     Action::DeleteChar => {
                         if app.input_mode == app::InputMode::Command {
                             app.command_buffer.pop();
                         } else if app.input_mode == app::InputMode::Comment {
-                            app.comment_buffer.pop();
+                            if app.comment_cursor > 0 {
+                                app.comment_cursor -= 1;
+                                app.comment_buffer.remove(app.comment_cursor);
+                            }
+                        }
+                    }
+                    Action::CycleCommentType => {
+                        app.cycle_comment_type();
+                    }
+                    Action::TextCursorLeft => {
+                        if app.comment_cursor > 0 {
+                            app.comment_cursor -= 1;
+                        }
+                    }
+                    Action::TextCursorRight => {
+                        if app.comment_cursor < app.comment_buffer.len() {
+                            app.comment_cursor += 1;
+                        }
+                    }
+                    Action::DeleteWord => {
+                        if app.input_mode == app::InputMode::Comment && app.comment_cursor > 0 {
+                            // Delete backwards to start of word or start of buffer
+                            while app.comment_cursor > 0
+                                && app
+                                    .comment_buffer
+                                    .chars()
+                                    .nth(app.comment_cursor - 1)
+                                    .map(|c| c.is_whitespace())
+                                    .unwrap_or(false)
+                            {
+                                app.comment_cursor -= 1;
+                                app.comment_buffer.remove(app.comment_cursor);
+                            }
+                            while app.comment_cursor > 0
+                                && app
+                                    .comment_buffer
+                                    .chars()
+                                    .nth(app.comment_cursor - 1)
+                                    .map(|c| !c.is_whitespace())
+                                    .unwrap_or(false)
+                            {
+                                app.comment_cursor -= 1;
+                                app.comment_buffer.remove(app.comment_cursor);
+                            }
+                        }
+                    }
+                    Action::ClearLine => {
+                        if app.input_mode == app::InputMode::Comment {
+                            app.comment_buffer.clear();
+                            app.comment_cursor = 0;
                         }
                     }
                     Action::SubmitInput => {
