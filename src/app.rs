@@ -162,6 +162,72 @@ impl App {
         self.jump_to_file(prev);
     }
 
+    pub fn next_hunk(&mut self) {
+        // Find the next hunk header position after current scroll
+        let mut cumulative = 0;
+        for file in &self.diff_files {
+            // File header
+            cumulative += 1;
+            // File comments
+            if let Some(review) = self.session.files.get(file.display_path()) {
+                cumulative += review.file_comments.len();
+            }
+
+            if file.is_binary || file.hunks.is_empty() {
+                cumulative += 1; // "(binary file)" or "(no changes)"
+            } else {
+                for hunk in &file.hunks {
+                    // This is a hunk header position
+                    if cumulative > self.diff_state.scroll_offset {
+                        self.diff_state.scroll_offset = cumulative;
+                        self.update_current_file_from_scroll();
+                        return;
+                    }
+                    cumulative += 1; // hunk header
+                    cumulative += hunk.lines.len(); // diff lines
+                }
+            }
+            cumulative += 1; // spacing
+        }
+    }
+
+    pub fn prev_hunk(&mut self) {
+        // Find the previous hunk header position before current scroll
+        let mut hunk_positions: Vec<usize> = Vec::new();
+        let mut cumulative = 0;
+
+        for file in &self.diff_files {
+            cumulative += 1; // File header
+            if let Some(review) = self.session.files.get(file.display_path()) {
+                cumulative += review.file_comments.len();
+            }
+
+            if file.is_binary || file.hunks.is_empty() {
+                cumulative += 1;
+            } else {
+                for hunk in &file.hunks {
+                    hunk_positions.push(cumulative);
+                    cumulative += 1;
+                    cumulative += hunk.lines.len();
+                }
+            }
+            cumulative += 1;
+        }
+
+        // Find the last hunk position before current scroll
+        for &pos in hunk_positions.iter().rev() {
+            if pos < self.diff_state.scroll_offset {
+                self.diff_state.scroll_offset = pos;
+                self.update_current_file_from_scroll();
+                return;
+            }
+        }
+
+        // If no previous hunk, go to start
+        self.diff_state.scroll_offset = 0;
+        self.update_current_file_from_scroll();
+    }
+
     fn calculate_file_scroll_offset(&self, file_idx: usize) -> usize {
         let mut offset = 0;
         for (i, file) in self.diff_files.iter().enumerate() {

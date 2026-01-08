@@ -78,6 +78,8 @@ fn main() -> anyhow::Result<()> {
                     }
                     Action::NextFile => app.next_file(),
                     Action::PrevFile => app.prev_file(),
+                    Action::NextHunk => app.next_hunk(),
+                    Action::PrevHunk => app.prev_hunk(),
                     Action::ToggleReviewed => app.toggle_reviewed(),
                     Action::ToggleFocus => {
                         app.focused_panel = match app.focused_panel {

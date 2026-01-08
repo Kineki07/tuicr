@@ -106,6 +106,33 @@ pub fn render_help(frame: &mut Frame) {
         ]),
         Line::from(""),
         Line::from(Span::styled(
+            "Comment Mode",
+            Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
+        )),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled(
+                "  1-4       ",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
+            Span::raw("Set type: Note/Suggestion/Issue/Praise"),
+        ]),
+        Line::from(vec![
+            Span::styled(
+                "  Ctrl-S    ",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
+            Span::raw("Save comment"),
+        ]),
+        Line::from(vec![
+            Span::styled(
+                "  Esc/Ctrl-C",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
+            Span::raw("Cancel"),
+        ]),
+        Line::from(""),
+        Line::from(Span::styled(
             "Commands",
             Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
         )),
